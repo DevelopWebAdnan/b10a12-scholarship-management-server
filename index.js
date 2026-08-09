@@ -20,6 +20,7 @@ async function connectToMongoDB() {
   try {
 
     const scholarshipCollection = client.db('scholarshipDB').collection('scholarship');
+    const scholarshipApplicationCollection = client.db('scholarshipDB').collection('scholarshipApplications');
 
     app.get('/scholarship', async (req, res) => {
       const result = await scholarshipCollection.find().toArray();
@@ -30,6 +31,13 @@ async function connectToMongoDB() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await scholarshipCollection.findOne(query);
+      res.send(result);
+    })
+
+    // scholarship application apis
+    app.post('scholarship-applications', async (req, res) => {
+      const application = req.body;
+      const result = await scholarshipApplicationCollection.insertOne(application);
       res.send(result);
     })
 
