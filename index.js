@@ -26,6 +26,12 @@ async function connectToMongoDB() {
     // user related apis
     app.post('/users', async (req, res) => {
       const user = req.body;
+      // Simple checking whether user exists in the database
+      const query = { userEmail: user.email }
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null });
+      }
       const result = await userCollection.insertOne(user);
       res.send(result);
     })
