@@ -19,8 +19,16 @@ const client = new MongoClient(`mongodb+srv://${process.env.DB_USER}:${process.e
 async function connectToMongoDB() {
   try {
 
+    const userCollection = client.db('scholarshipDB').collection('users');
     const scholarshipCollection = client.db('scholarshipDB').collection('scholarship');
     const scholarshipApplicationCollection = client.db('scholarshipDB').collection('scholarshipApplications');
+
+    // user related apis
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
 
     app.get('/scholarship', async (req, res) => {
       const result = await scholarshipCollection.find().toArray();
