@@ -35,6 +35,14 @@ async function connectToMongoDB() {
     })
 
     // scholarship application apis
+
+    app.get('scholarship-application', async (req, res) => {
+      const email = req.query.email;
+      const query = { applicant_email: email }
+      const result = await scholarshipApplicationCollection.find(query).toArray()
+      res.send(result);
+    })
+
     app.post('scholarship-applications', async (req, res) => {
       const application = req.body;
       const result = await scholarshipApplicationCollection.insertOne(application);
