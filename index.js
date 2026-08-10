@@ -3,6 +3,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -47,7 +48,7 @@ async function connectToMongoDB() {
       const filter = { _id: new ObjectId(id) }
       const updatedDoc = {
         $set: {
-          role: 'admin'
+          role: 'Admin'
         }
       }
       const result = await userCollection.updateOne(filter, updatedDoc);
