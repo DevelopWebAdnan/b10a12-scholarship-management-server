@@ -24,9 +24,26 @@ async function connectToMongoDB() {
     const scholarshipCollection = client.db('scholarshipDB').collection('scholarship');
     const scholarshipApplicationCollection = client.db('scholarshipDB').collection('scholarshipApplications');
 
-    // user related apis
+    // jwt related api
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.send({ token });
+    });
 
-    app.get('/users', async (req, res) => {
+    // middlewares
+    const verifyToken = (req, res, next) => {
+      console.log('Inside verifyToken middleware', req.headers);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'forbidden access' });
+      }
+      const token = req.headers.authorization.split(' ')[1];
+
+      // next();
+    }
+
+    // user related apis
+    app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -34,7 +51,7 @@ async function connectToMongoDB() {
     app.post('/users', async (req, res) => {
       const user = req.body;
       // Simple checking whether user exists in the database
-      const query = { userEmail: user.email }
+      const query = { userEmail: user.userEmail }
       const existingUser = await userCollection.findOne(query);
       if (existingUser) {
         return res.send({ message: "user already exists", insertedId: null });
