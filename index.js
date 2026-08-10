@@ -33,13 +33,18 @@ async function connectToMongoDB() {
 
     // middlewares
     const verifyToken = (req, res, next) => {
-      console.log('Inside verifyToken middleware', req.headers);
+      console.log('Inside verifyToken middleware', req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: 'forbidden access' });
       }
       const token = req.headers.authorization.split(' ')[1];
-
-      // next();
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+          return res.status(401).send({ message: 'forbidden access' });
+        }
+        res.decoded = decoded;
+        next();
+      })
     }
 
     // user related apis
