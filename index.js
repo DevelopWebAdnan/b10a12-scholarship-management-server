@@ -24,6 +24,12 @@ async function connectToMongoDB() {
     const scholarshipApplicationCollection = client.db('scholarshipDB').collection('scholarshipApplications');
 
     // user related apis
+
+    app.get('/users', async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post('/users', async (req, res) => {
       const user = req.body;
       // Simple checking whether user exists in the database
