@@ -122,6 +122,12 @@ async function connectToMongoDB() {
       const query = { _id: new ObjectId(id) };
       const result = await scholarshipCollection.findOne(query);
       res.send(result);
+    });
+
+    app.post('/scholarship', verifyToken, verifyAdmin, async (req, res) => {
+      const scholarship = req.body;
+      const result = await scholarshipCollection.insertOne(scholarship);
+      res.send(result);
     })
 
     // scholarship application apis
