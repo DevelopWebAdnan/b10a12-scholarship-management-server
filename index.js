@@ -128,8 +128,14 @@ async function connectToMongoDB() {
       const scholarship = req.body;
       const result = await scholarshipCollection.insertOne(scholarship);
       res.send(result);
-    })
+    });
 
+    app.delete('/scholarship/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await scholarshipCollection.deleteOne(query);
+      res.send(result);
+    })
     // scholarship application apis
 
     app.get('scholarship-application', async (req, res) => {
