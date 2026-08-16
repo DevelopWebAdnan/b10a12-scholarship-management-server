@@ -52,7 +52,7 @@ async function connectToMongoDB() {
       const email = req.decoded.email;
       const query = { userEmail: email };
       const user = await userCollection.findOne(query);
-      const isAdmin = user?.role === 'Admin';
+      const isAdmin = user?.role === 'admin';
       if (!isAdmin) {
         return res.status(403).send({ message: 'forbidden access' });
       }
@@ -65,7 +65,9 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
-    app.get('/users/admin/:email', verifyToken, async (req, res) => {
+    // app.get('/users/admin/:email', verifyToken, async (req, res) => {
+    // get user role
+    app.get('/users/role/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: "forbidden access" })
@@ -73,11 +75,11 @@ async function connectToMongoDB() {
 
       const query = { userEmail: email }
       const user = await userCollection.findOne(query)
-      let admin = false;
-      if (user) {
-        admin = user?.role === 'Admin'
-      }
-      res.send({ admin });
+      // let admin = false;
+      // if (user) {
+      //   admin = user?.role === 'admin'
+      // }
+      res.send({ role: user?.role });
     })
 
     app.post('/users', async (req, res) => {
@@ -92,12 +94,15 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
-    app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
+    // app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
+    app.patch('/users/role/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
+      const data = req.body;
       const filter = { _id: new ObjectId(id) }
       const updatedDoc = {
         $set: {
-          role: 'Admin'
+          // role: 'Admin'
+          role: data.role
         }
       }
       const result = await userCollection.updateOne(filter, updatedDoc);
