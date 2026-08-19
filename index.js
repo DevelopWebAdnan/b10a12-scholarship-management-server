@@ -59,6 +59,18 @@ async function connectToMongoDB() {
       next();
     }
 
+    const verifyModerator = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { userEmail: email };
+      const user = await userCollection.findOne(query);
+      const isModerator = user?.role === 'moderator' || user?.role === 'admin';
+      console.log('isModerator from verifyModerator middleware -->', isModerator)
+      if (!isModerator) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+
     // user related apis
     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -129,18 +141,19 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
-    app.post('/scholarship', verifyToken, verifyAdmin, async (req, res) => {
+    app.post('/scholarship', verifyToken, verifyModerator, async (req, res) => {
       const scholarship = req.body;
       const result = await scholarshipCollection.insertOne(scholarship);
       res.send(result);
     });
 
-    app.delete('/scholarship/:id', verifyToken, verifyAdmin, async (req, res) => {
+    app.delete('/scholarship/:id', verifyToken, verifyModerator, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await scholarshipCollection.deleteOne(query);
       res.send(result);
     })
+
     // scholarship application apis
 
     app.get('scholarship-application', async (req, res) => {
