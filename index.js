@@ -147,6 +147,32 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
+    app.patch('/scholarship/:id', async (req, res) => {
+      const id = req.params.id;
+      const scholarship = req.body;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          name: scholarship.name,
+          university_name: scholarship.university_name,
+          image: scholarship.image,
+          country: scholarship.country,
+          city: scholarship.city,
+          world_rank: scholarship.world_rank,
+          subject_category: scholarship.subject_category,
+          category: scholarship.category,
+          degree: scholarship.degree,
+          application_fees: scholarship.application_fees,
+          service_charge: scholarship.service_charge,
+          deadline: scholarship.deadline,
+          post_date: scholarship.post_date,
+          posted_email: scholarship.posted_email
+        }
+      }
+      const result = await scholarshipCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
     app.delete('/scholarship/:id', verifyToken, verifyModerator, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
