@@ -198,15 +198,16 @@ async function connectToMongoDB() {
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
-      const { price } = req.body;
-      const amount = parseInt(price * 100);
+      const { total } = req.body;
+      const amount = parseInt(total * 100);
+      console.log('amount inside the intent:', amount);
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: 'usd',
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        // automatic_payment_methods: {
+        //   enabled: true,
+        // },
         payment_method_types: ['card']
       });
 
