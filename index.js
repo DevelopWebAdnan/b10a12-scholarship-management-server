@@ -198,8 +198,8 @@ async function connectToMongoDB() {
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
-      const { total } = req.body;
-      const amount = parseInt(total * 100);
+      const { application_fees } = req.body;
+      const amount = parseInt(application_fees * 100);
       console.log('amount inside the intent:', amount);
 
       const paymentIntent = await stripe.paymentIntents.create({
@@ -214,6 +214,17 @@ async function connectToMongoDB() {
       res.send({ clientSecret: paymentIntent.client_secret })
     })
 
+    app.get('/admin-stats', async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const scholarships = await scholarshipCollection.estimatedDocumentCount();
+      const scholarshipApplications = await scholarshipApplicationCollection.estimatedDocumentCount();
+
+      res.send({
+        users,
+        scholarships,
+        scholarshipApplications
+      })
+    })
     await client.connect();
     console.log("You successfully connected to MongoDB!");
 
