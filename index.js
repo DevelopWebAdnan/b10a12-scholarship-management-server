@@ -166,6 +166,9 @@ async function connectToMongoDB() {
           application_fees: scholarship.application_fees,
           service_charge: scholarship.service_charge,
           deadline: scholarship.deadline,
+          subject_name: scholarship.subject_name,
+          description: scholarship.description,
+          stipend: scholarship.stipend,
           post_date: scholarship.post_date,
           posted_email: scholarship.posted_email
         }
