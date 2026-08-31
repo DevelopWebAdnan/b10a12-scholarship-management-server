@@ -93,6 +93,18 @@ async function connectToMongoDB() {
       //   admin = user?.role === 'admin'
       // }
       res.send({ role: user?.role });
+    });
+
+    app.get('/users/userId/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+
+      const query = { userEmail: email }
+      const user = await userCollection.findOne(query)
+
+      res.send({ userId: user?._id });
     })
 
     app.post('/users', async (req, res) => {
