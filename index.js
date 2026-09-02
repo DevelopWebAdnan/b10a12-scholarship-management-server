@@ -227,7 +227,8 @@ async function connectToMongoDB() {
         const query1 = { _id: new ObjectId(application.scholarshipId) }
         const scholarship = await scholarshipCollection.findOne(query1)
         if (scholarship) {
-          application.university_name = scholarship.university_name,
+          application.name = scholarship.name,
+            application.university_name = scholarship.university_name,
             application.university_address = scholarship.country,
             application.subject_category = scholarship.subject_category,
             application.application_fees = scholarship.application_fees,
@@ -244,6 +245,31 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
+    app.patch('/scholarship-application/:id', async (req, res) => {
+      const id = req.params.id;
+      const scholarshipApplication = req.body;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          // applicant_name: scholarshipApplication.applicant_name,
+          // applicant_email: scholarshipApplication.applicant_email,
+          // applicant_Id: scholarshipApplication.applicant_Id,
+          // scholarshipId: scholarshipApplication.scholarshipId,
+          // currentDate: scholarshipApplication.currentDate,
+          phone: scholarshipApplication.phone,
+          photo: scholarshipApplication.photo,
+          address: scholarshipApplication.address,
+          gender: scholarshipApplication.gender,
+          degree: scholarshipApplication.degree,
+          ssc: scholarshipApplication.ssc,
+          hsc: scholarshipApplication.hsc,
+          gap: scholarshipApplication.gap
+          // status: 'pending'
+        }
+      }
+      const result = await scholarshipApplicationCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
     app.delete('/scholarship-application/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
