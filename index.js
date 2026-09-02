@@ -198,17 +198,57 @@ async function connectToMongoDB() {
 
     // scholarship application apis
 
-    app.get('scholarship-application', async (req, res) => {
+    app.get('/scholarship-application', async (req, res) => {
       const email = req.query.email;
       const query = { applicant_email: email }
-      const result = await scholarshipApplicationCollection.find(query).toArray()
-      res.send(result);
-    })
 
-    app.post('scholarship-applications', async (req, res) => {
+      // using aggregate
+      // const result = await scholarshipApplicationCollection.aggregate([
+      //   {
+      //     $lookup: {
+      //       from: 'scholarship',
+      //       localField: 'scholarshipId',
+      //       foreignField: '_id',
+      //       as: 'scholarshipData'
+      //     }
+      //   },
+      //   {
+      //     $addFields: {
+      //       university_name: scholarship.university_name
+      //     }
+      //   }
+      // ]).toArray()
+
+      const result = await scholarshipApplicationCollection.find(query).toArray()
+
+      // aggregate data
+      for (const application of result) {
+        console.log(application.scholarshipId);
+        const query1 = { _id: new ObjectId(application.scholarshipId) }
+        const scholarship = await scholarshipCollection.findOne(query1)
+        if (scholarship) {
+          application.university_name = scholarship.university_name,
+            application.university_address = scholarship.country,
+            application.subject_category = scholarship.subject_category,
+            application.application_fees = scholarship.application_fees,
+            application.service_charge = scholarship.service_charge
+        }
+      }
+      res.send(result);
+    });
+
+    app.post('/scholarship-applications', verifyToken, async (req, res) => {
       const application = req.body;
+      console.log('application:', application);
       const result = await scholarshipApplicationCollection.insertOne(application);
       res.send(result);
+    });
+
+    app.delete('/scholarship-application/:id', verifyToken, async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await scholarshipApplicationCollection.deleteOne(query)
+      res.send(result)
     })
 
     // payment intent
