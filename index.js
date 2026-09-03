@@ -199,7 +199,7 @@ async function connectToMongoDB() {
 
     // scholarship application apis
 
-    app.get('/scholarship-application', async (req, res) => {
+    app.get('/scholarship-application', verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { applicant_email: email }
 
@@ -246,7 +246,7 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
-    app.patch('/scholarship-application/:id', async (req, res) => {
+    app.patch('/scholarship-application/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const scholarshipApplication = req.body;
       const filter = { _id: new ObjectId(id) }
@@ -270,7 +270,8 @@ async function connectToMongoDB() {
       }
       const result = await scholarshipApplicationCollection.updateOne(filter, updatedDoc);
       res.send(result);
-    })
+    });
+
     app.delete('/scholarship-application/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
@@ -279,6 +280,13 @@ async function connectToMongoDB() {
     });
 
     // Review related API
+    app.get('/reviews', async (req, res) => {
+      const email = req.query.email;
+      const query = { reviewer_email: email }
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post('/review', async (req, res) => {
       const review = req.body;
       // using aggregate
@@ -292,7 +300,33 @@ async function connectToMongoDB() {
       const result = await reviewCollection.insertOne(review)
       // res.send({ result1, result });
       res.send(result);
-    })
+    });
+
+    app.patch('/review/:id', verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const review = req.body;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          comment: review.comment,
+          rating: review.rating,
+          reviewer_email: review.reviewer_email,
+          reviewer_image: review.reviewer_image,
+          reviewer_name: review.reviewer_name,
+          review_date: review.review_date,
+          university_name: review.university_name,
+        }
+      }
+      const result = await reviewCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete('/review/:id', verifyToken, async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await reviewCollection.deleteOne(query)
+      res.send(result)
+    });
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
