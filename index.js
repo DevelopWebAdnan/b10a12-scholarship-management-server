@@ -24,6 +24,7 @@ async function connectToMongoDB() {
     const userCollection = client.db('scholarshipDB').collection('users');
     const scholarshipCollection = client.db('scholarshipDB').collection('scholarship');
     const scholarshipApplicationCollection = client.db('scholarshipDB').collection('scholarshipApplications');
+    const reviewCollection = client.db('scholarshipDB').collection('reviews');
 
     // jwt related api
     app.post('/jwt', async (req, res) => {
@@ -275,6 +276,22 @@ async function connectToMongoDB() {
       const query = { _id: new ObjectId(id) }
       const result = await scholarshipApplicationCollection.deleteOne(query)
       res.send(result)
+    });
+
+    // Review related API
+    app.post('/review', async (req, res) => {
+      const review = req.body;
+      // using aggregate
+      const id = review.scholarshipId
+      console.log('scholarshipId:', id);
+      const query = { _id: new ObjectId(id) }
+      const scholarship = await scholarshipCollection.findOne(query);
+      if (scholarship) {
+        review.scholarship_name = scholarship.name
+      }
+      const result = await reviewCollection.insertOne(review)
+      // res.send({ result1, result });
+      res.send(result);
     })
 
     // payment intent
