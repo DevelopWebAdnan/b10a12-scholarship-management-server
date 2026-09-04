@@ -291,16 +291,26 @@ async function connectToMongoDB() {
     // Review related API
     app.get('/reviews', async (req, res) => {
       const email = req.query.email;
-      const query = { reviewer_email: email }
+      let query = {}
+      if (email) {
+        query = { reviewer_email: email }
+      }
       const result = await reviewCollection.find(query).toArray();
 
-      // const scholarshipId = req.params.id;
-      // const scholarshipId = req.query.id;
-      // console.log('scholarshipId:', scholarshipId);
+      // aggregate data
+      for (const review of result) {
+        console.log('review.scholarshipId:', review.scholarshipId);
+        // const scholarship_id = review.scholarshipId;
 
-      // const query1 = { scholarshipId: scholarshipId };
-      // const result1 = await reviewCollection.find(query).toArray();
-      // res.send(result);
+        // const query1 = { scholarshipId: new ObjectId(review.scholarshipId) };
+        const query1 = { _id: new ObjectId(review.scholarshipId) };
+        const scholarship = await scholarshipCollection.findOne(query1);
+
+        if (scholarship) {
+          review.subject_category = scholarship.subject_category
+        }
+      }
+
       res.send(result);
     });
 
