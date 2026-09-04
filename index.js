@@ -152,7 +152,16 @@ async function connectToMongoDB() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await scholarshipCollection.findOne(query);
-      res.send(result);
+
+      // get the reviews given for a specific scholarship
+
+      const scholarshipId = id;
+      console.log('scholarshipId:', scholarshipId);
+
+      const query1 = { scholarshipId: scholarshipId };
+      const reviews = await reviewCollection.find(query1).toArray();
+
+      res.send({ result, reviews });
     });
 
     app.post('/scholarship', verifyToken, verifyModerator, async (req, res) => {
@@ -284,8 +293,27 @@ async function connectToMongoDB() {
       const email = req.query.email;
       const query = { reviewer_email: email }
       const result = await reviewCollection.find(query).toArray();
+
+      // const scholarshipId = req.params.id;
+      // const scholarshipId = req.query.id;
+      // console.log('scholarshipId:', scholarshipId);
+
+      // const query1 = { scholarshipId: scholarshipId };
+      // const result1 = await reviewCollection.find(query).toArray();
+      // res.send(result);
       res.send(result);
     });
+
+    // app.get('/reviews/:scholarshipId', async (req, res) => {
+    // app.get('/reviews/:id', async (req, res) => {
+    //   const scholarshipId = req.params.scholarshipId;
+    //   const scholarshipId = req.params.id;
+    //   console.log('scholarshipId:', scholarshipId);
+
+    //   const query = { scholarshipId: scholarshipId };
+    //   const result = await reviewCollection.find(query).toArray();
+    //   res.send(result);
+    // })
 
     app.post('/review', async (req, res) => {
       const review = req.body;
