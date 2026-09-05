@@ -209,8 +209,11 @@ async function connectToMongoDB() {
     // scholarship application apis
 
     app.get('/scholarship-application', verifyToken, async (req, res) => {
+      let query = {}
       const email = req.query.email;
-      const query = { applicant_email: email }
+      if (email) {
+        query = { applicant_email: email }
+      }
 
       // using aggregate
       // const result = await scholarshipApplicationCollection.aggregate([
@@ -280,6 +283,20 @@ async function connectToMongoDB() {
       const result = await scholarshipApplicationCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
+
+    app.patch('/scholarship-application/feedback/:id', verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const { feedback } = req.body;
+      console.log('feedback:', feedback);
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          feedback: feedback
+        }
+      }
+      const result = await scholarshipApplicationCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
 
     app.delete('/scholarship-application/:id', verifyToken, async (req, res) => {
       const id = req.params.id
@@ -365,6 +382,8 @@ async function connectToMongoDB() {
       const result = await reviewCollection.deleteOne(query)
       res.send(result)
     });
+
+    // Review related
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
