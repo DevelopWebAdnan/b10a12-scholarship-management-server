@@ -296,6 +296,21 @@ async function connectToMongoDB() {
       }
       const result = await scholarshipApplicationCollection.updateOne(filter, updatedDoc);
       res.send(result);
+    });
+
+    app.patch('/scholarship-application/status/:id', verifyToken, verifyModerator, async (req, res) => {
+      const id = req.params.id;
+      // const data = req.body;
+      // console.log('data:', data);
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          // status: data.status
+          status: 'rejected'
+        }
+      }
+      const result = await scholarshipApplicationCollection.updateOne(filter, updateDoc);
+      res.send(result);
     })
 
     app.delete('/scholarship-application/:id', verifyToken, async (req, res) => {
