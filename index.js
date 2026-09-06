@@ -75,7 +75,23 @@ async function connectToMongoDB() {
 
     // user related apis
     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
-      const result = await userCollection.find().toArray();
+      console.log(req.query);
+      const sort = req.query?.sort;
+
+      let sortQuery = {}
+
+      // if (sort) {
+      if (sort == "true") {
+        sortQuery = { role: -1 };
+      }
+      // else {
+      //   sortQuery = { role: 1 };
+      // }
+
+      // const result = (await userCollection.find().toArray()).sort(sortQuery);
+      // const result = await userCollection.find().sort(sortQuery).toArray();
+      const cursor = userCollection.find().sort(sortQuery);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
@@ -88,7 +104,10 @@ async function connectToMongoDB() {
       }
 
       const query = { userEmail: email }
-      const user = await userCollection.findOne(query)
+
+      // const user = await userCollection.findOne(query).sort(sortQuery);
+      const user = await userCollection.findOne(query);
+
       // let admin = false;
       // if (user) {
       //   admin = user?.role === 'admin'
