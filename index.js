@@ -246,6 +246,7 @@ async function connectToMongoDB() {
             application.subject_category = scholarship.subject_category,
             application.application_fees = scholarship.application_fees,
             application.service_charge = scholarship.service_charge
+          application.category = scholarship.category
         }
       }
       res.send(result);
@@ -262,6 +263,10 @@ async function connectToMongoDB() {
       const id = req.params.id;
       const scholarshipApplication = req.body;
       const filter = { _id: new ObjectId(id) }
+      // const application = await scholarshipApplicationCollection.findOne(filter);
+      // if(application.status === "Pending") {
+      //   return res.status(409).send("Cannot edit once the application")
+      // }
       const updatedDoc = {
         $set: {
           // applicant_name: scholarshipApplication.applicant_name,
@@ -306,7 +311,7 @@ async function connectToMongoDB() {
       const updateDoc = {
         $set: {
           // status: data.status
-          status: 'rejected'
+          status: 'Rejected'
         }
       }
       const result = await scholarshipApplicationCollection.updateOne(filter, updateDoc);
