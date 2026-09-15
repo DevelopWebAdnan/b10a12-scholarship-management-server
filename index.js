@@ -163,7 +163,23 @@ async function connectToMongoDB() {
 
     // scholarship related apis
     app.get('/scholarship', async (req, res) => {
-      const result = await scholarshipCollection.find().toArray();
+      // const selectionCriteria = { application_fees: -1, post_date: -1 };
+      // const cursor = scholarshipCollection.find().sort(selectionCriteria).limit(6);
+      // const result = await cursor.toArray();
+
+      const searchQuery = req.query.searchQuery;
+      console.log(searchQuery);
+
+      let query = {};
+      if (searchQuery) {
+        query = {
+          name: { $regex: searchQuery, $options: 'i' },
+          university_name: { $regex: searchQuery, $options: 'i' },
+          degree: { $regex: searchQuery, $options: 'i' }
+        };
+      }
+      const result = await scholarshipCollection.find(query).toArray();
+      // console.log(result);
       res.send(result);
     });
 
