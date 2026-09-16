@@ -246,6 +246,9 @@ async function connectToMongoDB() {
     app.get('/scholarship-application', verifyToken, async (req, res) => {
       let query = {}
       const email = req.query.email;
+      const sort = req.query.sort;
+      console.log('sort:', sort);
+
       if (email) {
         query = { applicant_email: email }
       }
