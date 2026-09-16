@@ -167,21 +167,40 @@ async function connectToMongoDB() {
       // const cursor = scholarshipCollection.find().sort(selectionCriteria).limit(6);
       // const result = await cursor.toArray();
 
-      const searchQuery = req.query.searchQuery;
-      console.log(searchQuery);
+      // const searchQuery = req.query?.searchQuery;
+      // const search = req.query?.search;
+      // console.log('search:', search);
+
+      // let query = {};
+      // if (search) {
+      //   query = {
+      //     name: { $regex: search, $options: 'i' },
+      //     university_name: { $regex: search, $options: 'i' },
+      //     degree: { $regex: search, $options: 'i' }
+      //   };
+      // }
+      // const result = await scholarshipCollection.find(query).toArray();
+      const result = await scholarshipCollection.find().toArray();
+      // console.log(result);
+      res.send(result);
+    });
+
+    app.get('/all-scholarship', async (req, res) => {
+      const search = req.query?.search;
+      console.log('search:', search);
 
       let query = {};
-      if (searchQuery) {
+      if (search) {
         query = {
-          name: { $regex: searchQuery, $options: 'i' },
-          university_name: { $regex: searchQuery, $options: 'i' },
-          degree: { $regex: searchQuery, $options: 'i' }
+          name: { $regex: search, $options: 'i' },
+          university_name: { $regex: search, $options: 'i' },
+          degree: { $regex: search, $options: 'i' }
         };
       }
       const result = await scholarshipCollection.find(query).toArray();
       // console.log(result);
       res.send(result);
-    });
+    })
 
     app.get('/scholarship/:id', async (req, res) => {
       const id = req.params.id;
@@ -245,7 +264,11 @@ async function connectToMongoDB() {
 
     app.get('/scholarship-application', verifyToken, async (req, res) => {
       let query = {}
+
+      let options = {}
+
       const email = req.query.email;
+
       const sort = req.query.sort;
       console.log('sort:', sort);
 
@@ -253,6 +276,12 @@ async function connectToMongoDB() {
         query = { applicant_email: email }
       }
 
+      if (sort && sort === "Applied date") {
+        options = { sort: { currentDate: -1 } }
+      }
+      if (sort && sort === "Scholarship deadline") {
+        options = { sort: { deadline: 1 } }
+      }
       // using aggregate
       // const result = await scholarshipApplicationCollection.aggregate([
       //   {
@@ -270,7 +299,7 @@ async function connectToMongoDB() {
       //   }
       // ]).toArray()
 
-      const result = await scholarshipApplicationCollection.find(query).toArray()
+      const result = await scholarshipApplicationCollection.find(query, options).toArray()
 
       // aggregate data
       for (const application of result) {
@@ -285,6 +314,7 @@ async function connectToMongoDB() {
             application.application_fees = scholarship.application_fees,
             application.service_charge = scholarship.service_charge
           application.category = scholarship.category
+          // application.deadline = scholarship.deadline
         }
       }
       res.send(result);
