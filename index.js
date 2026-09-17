@@ -209,13 +209,14 @@ async function connectToMongoDB() {
 
       // get the reviews given for a specific scholarship
 
-      const scholarshipId = id;
-      console.log('scholarshipId:', scholarshipId);
+      // const scholarshipId = id;
+      // console.log('scholarshipId:', scholarshipId);
 
-      const query1 = { scholarshipId: scholarshipId };
-      const reviews = await reviewCollection.find(query1).toArray();
+      // const query1 = { scholarshipId: scholarshipId };
+      // const reviews = await reviewCollection.find(query1).toArray();
 
-      res.send({ result, reviews });
+      // res.send({ result, reviews });
+      res.send(result);
     });
 
     app.post('/scholarship', verifyToken, verifyModerator, async (req, res) => {
@@ -376,6 +377,8 @@ async function connectToMongoDB() {
       // const data = req.body;
       // console.log('data:', data);
       const filter = { _id: new ObjectId(id) }
+      // TODO: apply validation if this scholarship application is already rejected
+
       const updateDoc = {
         $set: {
           // status: data.status
@@ -420,15 +423,15 @@ async function connectToMongoDB() {
     });
 
     // app.get('/reviews/:scholarshipId', async (req, res) => {
-    // app.get('/reviews/:id', async (req, res) => {
-    //   const scholarshipId = req.params.scholarshipId;
-    //   const scholarshipId = req.params.id;
-    //   console.log('scholarshipId:', scholarshipId);
+    app.get('/reviews/:id', async (req, res) => {
+      // const scholarshipId = req.params.scholarshipId;
+      const scholarshipId = req.params.id;
+      console.log('scholarshipId:', scholarshipId);
 
-    //   const query = { scholarshipId: scholarshipId };
-    //   const result = await reviewCollection.find(query).toArray();
-    //   res.send(result);
-    // })
+      const query = { scholarshipId: scholarshipId };
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    })
 
     app.post('/review', async (req, res) => {
       const review = req.body;
