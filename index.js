@@ -177,10 +177,13 @@ async function connectToMongoDB() {
 
     app.get('/all-scholarship', async (req, res) => {
       const searchPaginationQuery = req.query;
-
       const search = req.query?.search;
+
+      const page = parseInt(req.query.page);
+      const limit = parseInt(req.query.limit);
+
       // console.log('search:', search);
-      console.log('searchPaginationQuery:', searchPaginationQuery);
+      console.log('searchPaginationQuery, search, page, limit:', searchPaginationQuery, search, page, limit);
 
       const count = await scholarshipCollection.estimatedDocumentCount();
 
@@ -199,7 +202,7 @@ async function connectToMongoDB() {
         // query = { name: { $regex: search, $options: 'i' } }, { university_name: { $regex: search, $options: 'i' } }
         // query = { name: { $regex: search, $options: 'i' } }; query = { university_name: { $regex: search, $options: 'i' } }
       }
-      const result = await scholarshipCollection.find(query).toArray();
+      const result = await scholarshipCollection.find(query).skip(page * limit).limit(limit).toArray();
       // console.log(result);
       res.send({ result, count });
     })
