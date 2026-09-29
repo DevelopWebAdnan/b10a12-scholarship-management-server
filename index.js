@@ -176,20 +176,32 @@ async function connectToMongoDB() {
     });
 
     app.get('/all-scholarship', async (req, res) => {
+      const searchPaginationQuery = req.query;
+
       const search = req.query?.search;
-      console.log('search:', search);
+      // console.log('search:', search);
+      console.log('searchPaginationQuery:', searchPaginationQuery);
+
+      const count = await scholarshipCollection.estimatedDocumentCount();
 
       let query = {};
+
       if (search) {
         query = {
+          // name , university_name , degree: { $regex: search, $options: 'i' },
           name: { $regex: search, $options: 'i' },
           university_name: { $regex: search, $options: 'i' },
           degree: { $regex: search, $options: 'i' }
         };
+        // query = {name: { $regex: search, $options: 'i' }} || query = {university_name: { $regex: search, $options: 'i' }}
+        // query = { name: { $regex: search, $options: 'i' } } || { university_name: { $regex: search, $options: 'i' } }
+        // query = { name: { $regex: search, $options: 'i' } } && { university_name: { $regex: search, $options: 'i' } }
+        // query = { name: { $regex: search, $options: 'i' } }, { university_name: { $regex: search, $options: 'i' } }
+        // query = { name: { $regex: search, $options: 'i' } }; query = { university_name: { $regex: search, $options: 'i' } }
       }
       const result = await scholarshipCollection.find(query).toArray();
       // console.log(result);
-      res.send(result);
+      res.send({ result, count });
     })
 
     app.get('/scholarship/:id', async (req, res) => {
@@ -387,12 +399,16 @@ async function connectToMongoDB() {
     });
 
     // Review related API
-    app.get('/reviews', async (req, res) => {
-      const email = req.query.email;
+    app.get('/reviews', verifyToken, async (req, res) => {
       let query = {}
+      const email = req.query.email;
+      // const email = req.query?.email;
+      console.log('email inside /reviews: ', email);
+
       if (email) {
         query = { reviewer_email: email }
       }
+
       const result = await reviewCollection.find(query).toArray();
 
       // aggregate data
@@ -416,7 +432,7 @@ async function connectToMongoDB() {
     app.get('/reviews/:id', async (req, res) => {
       // const scholarshipId = req.params.scholarshipId;
       const scholarshipId = req.params.id;
-      console.log('scholarshipId:', scholarshipId);
+      // console.log('scholarshipId:', scholarshipId);
 
       const query = { scholarshipId: scholarshipId };
       const result = await reviewCollection.find(query).toArray();
