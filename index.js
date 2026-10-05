@@ -182,8 +182,7 @@ async function connectToMongoDB() {
       const page = parseInt(req.query.page);
       const limit = parseInt(req.query.limit);
 
-      // console.log('search:', search);
-      console.log('searchPaginationQuery, search, page, limit:', searchPaginationQuery, search, page, limit);
+      console.log(searchPaginationQuery, search, page, limit);
 
       const count = await scholarshipCollection.estimatedDocumentCount();
 
@@ -203,7 +202,6 @@ async function connectToMongoDB() {
         // query = { name: { $regex: search, $options: 'i' } }; query = { university_name: { $regex: search, $options: 'i' } }
       }
       const result = await scholarshipCollection.find(query).skip(page * limit).limit(limit).toArray();
-      // console.log(result);
       res.send({ result, count });
     })
 
@@ -288,30 +286,16 @@ async function connectToMongoDB() {
       if (sort && sort === "Scholarship deadline") {
         options = { sort: { deadline: 1 } }
       }
-      // using aggregate
-      // const result = await scholarshipApplicationCollection.aggregate([
-      //   {
-      //     $lookup: {
-      //       from: 'scholarship',
-      //       localField: 'scholarshipId',
-      //       foreignField: '_id',
-      //       as: 'scholarshipData'
-      //     }
-      //   },
-      //   {
-      //     $addFields: {
-      //       university_name: scholarship.university_name
-      //     }
-      //   }
-      // ]).toArray()
 
       const result = await scholarshipApplicationCollection.find(query, options).toArray()
 
       // aggregate data
       for (const application of result) {
         console.log(application.scholarshipId);
+
         const query1 = { _id: new ObjectId(application.scholarshipId) }
         const scholarship = await scholarshipCollection.findOne(query1)
+
         if (scholarship) {
           application.name = scholarship.name,
             application.university_name = scholarship.university_name,
@@ -507,13 +491,52 @@ async function connectToMongoDB() {
       const users = await userCollection.estimatedDocumentCount();
       const scholarships = await scholarshipCollection.estimatedDocumentCount();
       const scholarshipApplications = await scholarshipApplicationCollection.estimatedDocumentCount();
+      const reviews = await reviewCollection.estimatedDocumentCount();
 
       res.send({
         users,
         scholarships,
-        scholarshipApplications
+        scholarshipApplications,
+        reviews
       })
+    });
+
+    app.get('/scholarship-application-stats', async (req, res) => {
+      // using aggregate pipeline
+      const result = await scholarshipApplicationCollection.aggregate([
+        {
+          $addFields: {
+            scholarshipId: { '$toObjectId': '$scholarshipId' }
+          }
+        },
+        {
+          $lookup: {
+            from: 'scholarship',
+            localField: 'scholarshipId',
+            foreignField: '_id',
+            as: 'scholarshipData'
+          }
+        },
+        {
+          $unwind: '$scholarshipData'
+        },
+        {
+          $group: {
+            _id: '$scholarshipData.name',
+            scholarshipApplications: { '$sum': 1 },
+            revenue: { $sum: '$scholarshipData.application_fees' }
+          }
+        }
+        // {
+        //   $addFields: {
+        //     university_name: scholarship.university_name
+        //   }
+        // }
+      ]).toArray()
+
+      res.send(result);
     })
+
     await client.connect();
     console.log("You successfully connected to MongoDB!");
 
