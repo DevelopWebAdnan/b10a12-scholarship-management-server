@@ -80,23 +80,15 @@ async function connectToMongoDB() {
 
       let sortQuery = {}
 
-      // if (sort) {
       if (sort == "true") {
         sortQuery = { role: -1 };
       }
-      // else {
-      //   sortQuery = { role: 1 };
-      // }
-
-      // const result = (await userCollection.find().toArray()).sort(sortQuery);
-      // const result = await userCollection.find().sort(sortQuery).toArray();
+      
       const cursor = userCollection.find().sort(sortQuery);
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    // app.get('/users/admin/:email', verifyToken, async (req, res) => {
-    // get user role
     app.get('/users/role/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
@@ -105,13 +97,8 @@ async function connectToMongoDB() {
 
       const query = { userEmail: email }
 
-      // const user = await userCollection.findOne(query).sort(sortQuery);
       const user = await userCollection.findOne(query);
 
-      // let admin = false;
-      // if (user) {
-      //   admin = user?.role === 'admin'
-      // }
       res.send({ role: user?.role });
     });
 
@@ -139,14 +126,12 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
-    // app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
     app.patch('/users/role/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) }
       const updatedDoc = {
         $set: {
-          // role: 'Admin'
           role: data.role
         }
       }
@@ -168,10 +153,6 @@ async function connectToMongoDB() {
       const cursor = scholarshipCollection.find().sort(selectionCriteria).limit(6);
       const result = await cursor.toArray();
 
-      // const searchQuery = req.query?.searchQuery;
-
-      // const result = await scholarshipCollection.find().toArray();
-      // console.log(result);
       res.send(result);
     });
 
@@ -190,16 +171,10 @@ async function connectToMongoDB() {
 
       if (search) {
         query = {
-          // name , university_name , degree: { $regex: search, $options: 'i' },
           name: { $regex: search, $options: 'i' },
           university_name: { $regex: search, $options: 'i' },
           degree: { $regex: search, $options: 'i' }
         };
-        // query = {name: { $regex: search, $options: 'i' }} || query = {university_name: { $regex: search, $options: 'i' }}
-        // query = { name: { $regex: search, $options: 'i' } } || { university_name: { $regex: search, $options: 'i' } }
-        // query = { name: { $regex: search, $options: 'i' } } && { university_name: { $regex: search, $options: 'i' } }
-        // query = { name: { $regex: search, $options: 'i' } }, { university_name: { $regex: search, $options: 'i' } }
-        // query = { name: { $regex: search, $options: 'i' } }; query = { university_name: { $regex: search, $options: 'i' } }
       }
       const result = await scholarshipCollection.find(query).skip(page * limit).limit(limit).toArray();
       res.send({ result, count });
@@ -210,15 +185,6 @@ async function connectToMongoDB() {
       const query = { _id: new ObjectId(id) };
       const result = await scholarshipCollection.findOne(query);
 
-      // get the reviews given for a specific scholarship
-
-      // const scholarshipId = id;
-      // console.log('scholarshipId:', scholarshipId);
-
-      // const query1 = { scholarshipId: scholarshipId };
-      // const reviews = await reviewCollection.find(query1).toArray();
-
-      // res.send({ result, reviews });
       res.send(result);
     });
 
@@ -304,7 +270,6 @@ async function connectToMongoDB() {
             application.application_fees = scholarship.application_fees,
             application.service_charge = scholarship.service_charge
           application.category = scholarship.category
-          // application.deadline = scholarship.deadline
         }
       }
       res.send(result);
@@ -321,17 +286,8 @@ async function connectToMongoDB() {
       const id = req.params.id;
       const scholarshipApplication = req.body;
       const filter = { _id: new ObjectId(id) }
-      // const application = await scholarshipApplicationCollection.findOne(filter);
-      // if(application.status === "Pending") {
-      //   return res.status(409).send("Cannot edit once the application")
-      // }
       const updatedDoc = {
         $set: {
-          // applicant_name: scholarshipApplication.applicant_name,
-          // applicant_email: scholarshipApplication.applicant_email,
-          // applicant_Id: scholarshipApplication.applicant_Id,
-          // scholarshipId: scholarshipApplication.scholarshipId,
-          // currentDate: scholarshipApplication.currentDate,
           phone: scholarshipApplication.phone,
           photo: scholarshipApplication.photo,
           address: scholarshipApplication.address,
@@ -340,7 +296,6 @@ async function connectToMongoDB() {
           ssc: scholarshipApplication.ssc,
           hsc: scholarshipApplication.hsc,
           gap: scholarshipApplication.gap
-          // status: 'pending'
         }
       }
       const result = await scholarshipApplicationCollection.updateOne(filter, updatedDoc);
@@ -363,10 +318,8 @@ async function connectToMongoDB() {
 
     app.patch('/scholarship-application/status/:id', verifyToken, verifyModerator, async (req, res) => {
       const id = req.params.id;
-      // const data = req.body;
-      // console.log('data:', data);
       const filter = { _id: new ObjectId(id) }
-      // TODO: apply validation if this scholarship application is already rejected
+      // At the client side, applied a validation if this scholarship application is already rejected
 
       const updateDoc = {
         $set: {
@@ -389,7 +342,6 @@ async function connectToMongoDB() {
     app.get('/reviews', verifyToken, async (req, res) => {
       let query = {}
       const email = req.query.email;
-      // const email = req.query?.email;
       console.log('email inside /reviews: ', email);
 
       if (email) {
@@ -401,9 +353,7 @@ async function connectToMongoDB() {
       // aggregate data
       for (const review of result) {
         console.log('review.scholarshipId:', review.scholarshipId);
-        // const scholarship_id = review.scholarshipId;
 
-        // const query1 = { scholarshipId: new ObjectId(review.scholarshipId) };
         const query1 = { _id: new ObjectId(review.scholarshipId) };
         const scholarship = await scholarshipCollection.findOne(query1);
 
@@ -415,11 +365,8 @@ async function connectToMongoDB() {
       res.send(result);
     });
 
-    // app.get('/reviews/:scholarshipId', async (req, res) => {
     app.get('/reviews/:id', async (req, res) => {
-      // const scholarshipId = req.params.scholarshipId;
       const scholarshipId = req.params.id;
-      // console.log('scholarshipId:', scholarshipId);
 
       const query = { scholarshipId: scholarshipId };
       const result = await reviewCollection.find(query).toArray();
@@ -437,7 +384,6 @@ async function connectToMongoDB() {
         review.scholarship_name = scholarship.name
       }
       const result = await reviewCollection.insertOne(review)
-      // res.send({ result1, result });
       res.send(result);
     });
 
@@ -466,8 +412,6 @@ async function connectToMongoDB() {
       const result = await reviewCollection.deleteOne(query)
       res.send(result)
     });
-
-    // Review related
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
@@ -501,7 +445,7 @@ async function connectToMongoDB() {
       })
     });
 
-    app.get('/scholarship-application-stats', async (req, res) => {
+    app.get('/scholarship-application-stats', verifyToken, verifyAdmin, async (req, res) => {
       // using aggregate pipeline
       const result = await scholarshipApplicationCollection.aggregate([
         {
@@ -526,19 +470,22 @@ async function connectToMongoDB() {
             scholarshipApplications: { '$sum': 1 },
             revenue: { $sum: '$scholarshipData.application_fees' }
           }
+        },
+        {
+          $project: {
+            _id: 0,
+            scholarship: '$_id',
+            scholarshipApplications: '$scholarshipApplications',
+            revenue: '$revenue'
+          }
         }
-        // {
-        //   $addFields: {
-        //     university_name: scholarship.university_name
-        //   }
-        // }
       ]).toArray()
 
       res.send(result);
     })
 
     await client.connect();
-    console.log("You successfully connected to MongoDB!");
+    // console.log("You successfully connected to MongoDB!");
 
     return client;
 
@@ -552,7 +499,7 @@ connectToMongoDB();
 // Call this only when your application terminates
 // export async function disconnectFromMongoDB() {
 async function disconnectFromMongoDB() {
-  await client.close();
+  // await client.close();
 }
 
 
